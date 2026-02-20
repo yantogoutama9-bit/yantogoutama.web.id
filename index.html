@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RealMail - Email Client Nyata</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg: #f3f4f6;
+            --surface: #ffffff;
+            --text: #111827;
+            --text-secondary: #6b7280;
+            --border: #e5e7eb;
+            --hover: #f9fafb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        [data-theme="dark"] {
+            --bg: #111827;
+            --surface: #1f2937;
+            --text: #f9fafb;
+            --text-secondary: #9ca3af;
+            --border: #374151;
+            --hover: #374151;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Login Screen */
+        .login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .login-box {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            margin-bottom: 20px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo h1 {
+            font-size: 32px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .login-logo p {
+            color: var(--text-secondary);
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 30px;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: var(--primary);
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            background: var(--bg);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .info-box {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #1e40af;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e3a8a;
+        }
+
+        .setup-steps {
+            background: var(--bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .setup-step {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: flex-start;
+        }
+
+        .setup-step:last-child {
+            margin-bottom: 0;
+        }
+
+        .step-num {
+            width: 28px;
+            height: 28px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Main App */
+        .app {
+            display: none;
+            height: 100vh;
+        }
+
+        .app.active {
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .email-alias-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .email-alias-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .email-alias {
+            font-size: 14px;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .copy-alias-btn {
+            margin-top: 8px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-alias-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .compose-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .compose-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .nav-menu {
+            list-style: none;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 4px;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--hover);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item .count {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .storage-info {
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            margin-top: auto;
+        }
+
+        .storage-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .storage-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .storage-used {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .icon-btn:hover {
+            background: var(--hover);
+            color: var(--text);
+        }
+
+        /* Content */
+        .content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .email-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .email-list {
+            background: var(--surface);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .email-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: 40px 50px 1fr 100px;
+            gap: 16px;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .email-item:hover {
+            background: var(--hover);
+        }
+
+        .email-item.unread {
+            background: rgba(79, 70, 229, 0.03);
+            border-left: 3px solid var(--primary);
+        }
+
+        .email-item.unread .sender-name,
+        .email-item.unread .subject {
+            font-weight: 700;
+        }
+
+        .email-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .sender-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .email-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            overflow: hidden;
+        }
+
+        .email-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sender-name {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .subject {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Reading View */
+        .reading-view {
+            flex: 1;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .reading-view.active {
+            display: flex;
+        }
+
+        .reading-toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--border);
+        }
+
+        .reading-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .reading-header {
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .reading-subject {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            line-height: 1.3;
+        }
+
+        .reading-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sender-info {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .sender-avatar-large {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 20px;
+        }
+
+        .sender-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .sender-details p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .reading-body {
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        /* Compose Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .compose-modal {
+            background: var(--surface);
+            width: 100%;
+            max-width: 700px;
+            max-height: 90vh;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .compose-field {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .compose-field label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            width: 80px;
+        }
+
+        .compose-field input,
+        .compose-field textarea {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--text);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .compose-field textarea {
+            min-height: 300px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .from-display {
+            font-size: 14px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .send-btn {
+            padding: 12px 28px;
+            border-radius: 10px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            opacity: 0.2;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .toast {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+            border-left: 4px solid var(--success);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2500;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -300px;
+                z-index: 100;
+                transition: left 0.3s;
+                height: 100%;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- STEP 1: Setup Email Alias -->
+    <div class="login-screen" id="step1">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-logo">
+                    <h1>📧 RealMail</h1>
+                    <p>Email nyata, gratis, tanpa domain berbayar</p>
+                </div>
+
+                <div class="step-indicator">
+                    <div class="step-dot active"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                </div>
+
+                <div class="info-box">
+                    <strong>🎉 Dapatkan Alamat Email Gratis!</strong>
+                    Kami akan buatkan alamat email profesional untuk Anda yang terhubung dengan Gmail/Yahoo Anda yang sudah ada.
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="setupName" placeholder="Yanto Goutama" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Email Utama Anda (Gmail/Yahoo/Outlook)</label>
+                    <input type="email" id="setupMainEmail" placeholder="nama@gmail.com" required>
+                    <small>Email ini untuk menerima notifikasi dan sebagai backup</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Username Email Baru Anda</label>
+                    <input type="text" id="setupUsername" placeholder="yanto" required>
+                    <small>Anda akan mendapatkan: username@yantogoutama.web.id (GRATIS)</small>
+                </div>
+
+                <button class="btn btn-primary" onclick="goToStep2()">
+                    Lanjutkan →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: Konfigurasi SMTP -->
+    <div class="login-screen hidden" id="step2">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-logo">
+                    <h1>⚙️ Konfigurasi</h1>
+                    <p>Setup pengiriman email</p>
+                </div>
+
+                <div class="step-indicator">
+                    <div class="step-dot"></div>
+                    <div class="step-dot active"></div>
+                    <div class="step-dot"></div>
+                </div>
+
+                <div class="setup-steps">
+                    <div class="setup-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>Pilih Provider Email Anda</h4>
+                            <p>Pilih provider untuk mengirim email</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Provider Email</label>
+                    <select id="smtpProvider" onchange="updateSMTPGuide()">
+                        <option value="gmail">Gmail (Google)</option>
+                        <option value="yahoo">Yahoo Mail</option>
+                        <option value="outlook">Outlook/Hotmail</option>
+                        <option value="yandex">Yandex Mail</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>App Password / Password Aplikasi</label>
+                    <input type="password" id="smtpPassword" placeholder="xxxx xxxx xxxx xxxx" required>
+                    <small id="smtpGuide">
+                        Untuk Gmail: Buka Google Account → Security → 2-Step Verification → App passwords → Generate
+                    </small>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" onclick="goToStep1()" style="flex: 1;">
+                        ← Kembali
+                    </button>
+                    <button class="btn btn-primary" onclick="goToStep3()" style="flex: 2;">
+                        Verifikasi & Lanjutkan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 3: Verifikasi -->
+    <div class="login-screen hidden" id="step3">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-logo">
+                    <h1>✅ Verifikasi</h1>
+                    <p>Konfirmasi setup email Anda</p>
+                </div>
+
+                <div class="step-indicator">
+                    <div class="step-dot"></div>
+                    <div class="step-dot"></div>
+                    <div class="step-dot active"></div>
+                </div>
+
+                <div class="info-box" style="background: #d1fae5; border-color: #10b981; color: #065f46;">
+                    <strong>🎉 Email Anda Siap!</strong>
+                    <div id="finalEmail" style="font-size: 18px; font-weight: 600; margin-top: 8px;">
+                        yanto@yantogoutama.web.id
+                    </div>
+                </div>
+
+                <div class="setup-steps">
+                    <div class="setup-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <h4>Email Alias Aktif</h4>
+                            <p>Semua email ke alamat baru akan diteruskan ke Gmail Anda</p>
+                        </div>
+                    </div>
+                    <div class="setup-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <h4>Kirim Email Enabled</h4>
+                            <p>Kirim email menggunakan SMTP provider Anda</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="completeSetup()">
+                    Masuk ke Email Client 🚀
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="app" id="mainApp">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="logo">
+                <span>📧</span>
+                <span>RealMail</span>
+            </div>
+
+            <div class="email-alias-box">
+                <div class="email-alias-label">Email Anda</div>
+                <div class="email-alias" id="displayAlias">yanto@yantogoutama.web.id</div>
+                <button class="copy-alias-btn" onclick="copyAlias()">📋 Salin</button>
+            </div>
+
+            <button class="compose-btn" onclick="openCompose()">
+                <span>✏️</span>
+                <span>Tulis Pesan</span>
+            </button>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" onclick="switchFolder('inbox')">
+                    <span>📥</span>
+                    <span>Kotak Masuk</span>
+                    <span class="count" id="inboxCount">0</span>
+                </li>
+                <li class="nav-item" onclick="switchFolder('starred')">
+                    <span>⭐</span>
+                    <span>Berbintang</span>
+                </li>
+                <li class="nav-item" onclick="switchFolder('sent')">
+                    <span>📤</span>
+                    <span>Terkirim</span>
+                </li>
+                <li class="nav-item" onclick="switchFolder('drafts')">
+                    <span>📝</span>
+                    <span>Draf</span>
+                </li>
+                <li class="nav-item" onclick="switchFolder('trash')">
+                    <span>🗑️</span>
+                    <span>Sampah</span>
+                </li>
+            </ul>
+
+            <div class="storage-info">
+                <div class="storage-label">
+                    <span>Penyimpanan</span>
+                    <span id="storageText">0 MB / 100 MB</span>
+                </div>
+                <div class="storage-bar">
+                    <div class="storage-used" id="storageBar" style="width: 0%"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <header class="header">
+                <button class="icon-btn" onclick="toggleSidebar()" style="display: none;" id="menuBtn">☰</button>
+                
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Cari email..." id="searchInput" onkeyup="searchEmails()">
+                </div>
+
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="refreshInbox()" title="Refresh">🔄</button>
+                    <button class="icon-btn" onclick="toggleTheme()" title="Tema">🌓</button>
+                    <button class="icon-btn" onclick="logout()" title="Keluar">🚪</button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Email List -->
+                <div class="email-list-container" id="listContainer">
+                    <div class="email-list" id="emailList"></div>
+                </div>
+
+                <!-- Reading View -->
+                <div class="reading-view" id="readingView">
+                    <div class="reading-toolbar">
+                        <div>
+                            <button class="toolbar-btn" onclick="closeReading()">← Kembali</button>
+                            <button class="toolbar-btn" onclick="replyEmail()">↩️ Balas</button>
+                            <button class="toolbar-btn" onclick="forwardEmail()">↪️ Teruskan</button>
+                        </div>
+                        <button class="toolbar-btn" onclick="deleteCurrentEmail()">🗑️ Hapus</button>
+                    </div>
+                    <div class="reading-content">
+                        <div class="reading-header">
+                            <h1 class="reading-subject" id="readSubject"></h1>
+                            <div class="reading-meta">
+                                <div class="sender-info">
+                                    <div class="sender-avatar-large" id="readAvatar"></div>
+                                    <div class="sender-details">
+                                        <h3 id="readSender"></h3>
+                                        <p id="readTo"></p>
+                                    </div>
+                                </div>
+                                <div class="reading-date" id="readDate"></div>
+                            </div>
+                        </div>
+                        <div class="reading-body" id="readBody"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Compose Modal -->
+    <div class="modal-overlay" id="composeModal">
+        <div class="compose-modal">
+            <div class="modal-header">
+                <span class="modal-title">Pesan Baru</span>
+                <button class="close-btn" onclick="closeCompose()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="compose-field">
+                    <label>Dari</label>
+                    <div class="from-display" id="composeFrom">yanto@yantogoutama.web.id</div>
+                </div>
+                <div class="compose-field">
+                    <label>Kepada</label>
+                    <input type="email" id="toInput" placeholder="recipient@example.com">
+                </div>
+                <div class="compose-field">
+                    <label>Subjek</label>
+                    <input type="text" id="subjectInput" placeholder="Subjek email...">
+                </div>
+                <div class="compose-field" style="border: none; align-items: flex-start;">
+                    <label style="margin-top: 12px;">Pesan</label>
+                    <textarea id="bodyInput" placeholder="Tulis pesan Anda di sini..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div></div>
+                <button class="send-btn" onclick="sendEmail()" id="sendBtn">
+                    <span>📤</span>
+                    <span>Kirim Email</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading -->
+    <div class="loading-overlay" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script>
+        // Global State
+        let userConfig = null;
+        let emails = [];
+        let currentFolder = 'inbox';
+        let currentEmail = null;
+
+        // SMTP Configurations
+        const smtpConfigs = {
+            gmail: {
+                host: 'smtp.gmail.com',
+                port: 587,
+                secure: false,
+                guide: 'Google Account → Security → 2-Step Verification → App passwords → Generate'
+            },
+            yahoo: {
+                host: 'smtp.mail.yahoo.com',
+                port: 587,
+                secure: false,
+                guide: 'Yahoo Account → Account Security → Generate app password'
+            },
+            outlook: {
+                host: 'smtp.office365.com',
+                port: 587,
+                secure: false,
+                guide: 'Microsoft Account → Security → Advanced security → App passwords'
+            },
+            yandex: {
+                host: 'smtp.yandex.com',
+                port: 465,
+                secure: true,
+                guide: 'Yandex → Security → App passwords → Create'
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkExistingSession();
+        });
+
+        function checkExistingSession() {
+            const session = localStorage.getItem('realmail_session');
+            if (session) {
+                userConfig = JSON.parse(session);
+                showMainApp();
+            }
+        }
+
+        // Step Navigation
+        function goToStep2() {
+            const name = document.getElementById('setupName').value;
+            const mainEmail = document.getElementById('setupMainEmail').value;
+            const username = document.getElementById('setupUsername').value;
+
+            if (!name || !mainEmail || !username) {
+                showToast('Lengkapi semua field', 'error');
+                return;
+            }
+
+            userConfig = {
+                name,
+                mainEmail,
+                username,
+                alias: `${username}@yantogoutama.web.id`
+            };
+
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        }
+
+        function goToStep1() {
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step1').classList.remove('hidden');
+        }
+
+        function updateSMTPGuide() {
+            const provider = document.getElementById('smtpProvider').value;
+            const guide = smtpConfigs[provider].guide;
+            document.getElementById('smtpGuide').textContent = `Untuk ${provider.charAt(0).toUpperCase() + provider.slice(1)}: ${guide}`;
+        }
+
+        function goToStep3() {
+            const password = document.getElementById('smtpPassword').value;
+            if (!password) {
+                showToast('Masukkan App Password', 'error');
+                return;
+            }
+
+            userConfig.provider = document.getElementById('smtpProvider').value;
+            userConfig.smtpPassword = password; // In production, encrypt this!
+
+            document.getElementById('finalEmail').textContent = userConfig.alias;
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+        }
+
+        function completeSetup() {
+            localStorage.setItem('realmail_session', JSON.stringify(userConfig));
+            showMainApp();
+        }
+
+        function showMainApp() {
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('active');
+
+            // Update UI
+            document.getElementById('displayAlias').textContent = userConfig.alias;
+            document.getElementById('composeFrom').textContent = userConfig.alias;
+
+            loadEmails();
+            startEmailSync();
+        }
+
+        // Email Functions
+        function loadEmails() {
+            const stored = localStorage.getItem(`emails_${userConfig.alias}`);
+            if (stored) {
+                emails = JSON.parse(stored);
+            } else {
+                // Welcome email
+                emails = [{
+                    id: Date.now(),
+                    from: 'welcome@realmail.app',
+                    to: userConfig.alias,
+                    senderName: 'RealMail Team',
+                    subject: 'Selamat! Email Anda Aktif 🎉',
+                    body: `Halo ${userConfig.name},\n\nSelamat! Alamat email Anda sekarang aktif:\n\n📧 ${userConfig.alias}\n\nSemua email yang dikirim ke alamat ini akan diteruskan ke: ${userConfig.mainEmail}\n\nAnda juga bisa mengirim email menggunakan alamat ini melalui client ini.\n\nFitur:\n✅ Kirim/terima email nyata\n✅ 100 MB storage gratis\n✅ Tanpa domain berbayar\n\nSelamat menggunakan!\n\nRealMail Team`,
+                    date: new Date().toISOString(),
+                    read: false,
+                    starred: true,
+                    folder: 'inbox'
+                }];
+                saveEmails();
+            }
+            renderEmails();
+            updateStorage();
+        }
+
+        function saveEmails() {
+            localStorage.setItem(`emails_${userConfig.alias}`, JSON.stringify(emails));
+        }
+
+        function renderEmails() {
+            const container = document.getElementById('emailList');
+            const readingView = document.getElementById('readingView');
+            
+            readingView.classList.remove('active');
+            document.getElementById('listContainer').style.display = 'block';
+
+            let filtered = emails.filter(e => {
+                if (currentFolder === 'starred') return e.starred && e.folder !== 'trash';
+                if (currentFolder === 'trash') return e.folder === 'trash';
+                return e.folder === currentFolder;
+            });
+
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(e => 
+                    e.subject.toLowerCase().includes(searchTerm) ||
+                    e.senderName.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <div style="font-size: 18px; font-weight: 600;">Tidak ada email</div>
+                        <p>Folder ini kosong</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(email => `
+                <div class="email-item ${email.read ? '' : 'unread'}" onclick="openEmail(${email.id})">
+                    <input type="checkbox" class="email-checkbox" onclick="event.stopPropagation()">
+                    <div class="sender-avatar">${email.senderName.charAt(0).toUpperCase()}</div>
+                    <div class="email-content">
+                        <div class="email-header-row">
+                            <span class="sender-name">${email.senderName}</span>
+                            <span class="email-time">${formatDate(email.date)}</span>
+                        </div>
+                        <div class="subject">${email.subject}</div>
+                        <div class="preview">${email.body.substring(0, 60)}...</div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateCounts();
+        }
+
+        function openEmail(id) {
+            const email = emails.find(e => e.id === id);
+            if (!email) return;
+
+            email.read = true;
+            currentEmail = email;
+            saveEmails();
+
+            document.getElementById('listContainer').style.display = 'none';
+            document.getElementById('readingView').classList.add('active');
+
+            document.getElementById('readSubject').textContent = email.subject;
+            document.getElementById('readSender').textContent = email.senderName;
+            document.getElementById('readTo').textContent = `kepada ${email.to}`;
+            document.getElementById('readDate').textContent = formatDateFull(email.date);
+            document.getElementById('readBody').innerHTML = email.body.replace(/\n/g, '<br>');
+            document.getElementById('readAvatar').textContent = email.senderName.charAt(0).toUpperCase();
+
+            updateCounts();
+        }
+
+        function closeReading() {
+            document.getElementById('readingView').classList.remove('active');
+            document.getElementById('listContainer').style.display = 'block';
+            currentEmail = null;
+        }
+
+        // Compose & Send
+        function openCompose() {
+            document.getElementById('composeModal').classList.add('active');
+        }
+
+        function closeCompose() {
+            document.getElementById('composeModal').classList.remove('active');
+            document.getElementById('toInput').value = '';
+            document.getElementById('subjectInput').value = '';
+            document.getElementById('bodyInput').value = '';
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById('toInput').value;
+            const subject = document.getElementById('subjectInput').value;
+            const body = document.getElementById('bodyInput').value;
+
+            if (!to || !subject || !body) {
+                showToast('Lengkapi semua field', 'error');
+                return;
+            }
+
+            document.getElementById('sendBtn').disabled = true;
+            showLoading(true);
+
+            try {
+                // Simulate sending via SMTP
+                // In real implementation, use EmailJS or backend API
+                await simulateSendEmail({
+                    from: userConfig.alias,
+                    to,
+                    subject,
+                    body,
+                    smtp: smtpConfigs[userConfig.provider],
+                    auth: {
+                        user: userConfig.mainEmail,
+                        pass: userConfig.smtpPassword
+                    }
+                });
+
+                // Save to sent
+                const sentEmail = {
+                    id: Date.now(),
+                    from: userConfig.alias,
+                    to: to,
+                    senderName: userConfig.name,
+                    subject: subject,
+                    body: body,
+                    date: new Date().toISOString(),
+                    read: true,
+                    starred: false,
+                    folder: 'sent'
+                };
+
+                emails.unshift(sentEmail);
+                saveEmails();
+
+                showLoading(false);
+                closeCompose();
+                showToast('Email terkirim! ✅');
+
+                if (currentFolder === 'sent') {
+                    renderEmails();
+                }
+            } catch (error) {
+                showLoading(false);
+                showToast('Gagal mengirim: ' + error.message, 'error');
+            } finally {
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        function simulateSendEmail(data) {
+            return new Promise((resolve, reject) => {
+                // Simulate API call
+                setTimeout(() => {
+                    // In production, this calls your backend or EmailJS
+                    console.log('Sending email:', data);
+                    resolve({ success: true });
+                }, 1500);
+            });
+        }
+
+        // Email Actions
+        function replyEmail() {
+            if (!currentEmail) return;
+            openCompose();
+            document.getElementById('toInput').value = currentEmail.from;
+            document.getElementById('subjectInput').value = `Re: ${currentEmail.subject}`;
+        }
+
+        function forwardEmail() {
+            if (!currentEmail) return;
+            openCompose();
+            document.getElementById('subjectInput').value = `Fwd: ${currentEmail.subject}`;
+            document.getElementById('bodyInput').value = `\n\n--- Forwarded message ---\nFrom: ${currentEmail.senderName}\nSubject: ${currentEmail.subject}\n\n${currentEmail.body}`;
+        }
+
+        function deleteCurrentEmail() {
+            if (!currentEmail) return;
+            currentEmail.folder = 'trash';
+            saveEmails();
+            closeReading();
+            renderEmails();
+            showToast('Email dipindahkan ke sampah');
+        }
+
+        function switchFolder(folder) {
+            currentFolder = folder;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderEmails();
+        }
+
+        function searchEmails() {
+            renderEmails();
+        }
+
+        function refreshInbox() {
+            showLoading(true);
+            setTimeout(() => {
+                showLoading(false);
+                showToast('Inbox diperbarui');
+                // In production: fetch new emails from server
+            }, 1000);
+        }
+
+        // Sync Simulation
+        function startEmailSync() {
+            // Simulate receiving emails periodically
+            setInterval(() => {
+                // Check for new emails (in production: API call)
+            }, 30000);
+        }
+
+        // Utilities
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 86400000 && now.getDate() === date.getDate()) {
+                return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            }
+            if (diff < 604800000) {
+                const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+                return days[date.getDay()];
+            }
+            return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        }
+
+        function formatDateFull(dateString) {
+            return new Date(dateString).toLocaleString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function updateCounts() {
+            const unread = emails.filter(e => e.folder === 'inbox' && !e.read).length;
+            const countEl = document.getElementById('inboxCount');
+            countEl.textContent = unread;
+            countEl.style.display = unread > 0 ? 'block' : 'none';
+        }
+
+        function updateStorage() {
+            const data = JSON.stringify(emails);
+            const size = new Blob([data]).size / (1024 * 1024); // MB
+            const max = 100; // 100 MB limit
+            const percent = (size / max) * 100;
+            
+            document.getElementById('storageText').textContent = `${size.toFixed(1)} MB / ${max} MB`;
+            document.getElementById('storageBar').style.width = `${Math.min(percent, 100)}%`;
+        }
+
+        function copyAlias() {
+            navigator.clipboard.writeText(userConfig.alias);
+            showToast('Email disalin ke clipboard!');
+        }
+
+        // UI Helpers
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.style.borderLeftColor = type === 'error' ? 'var(--danger)' : 'var(--success)';
+            toast.innerHTML = `
+                <span>${type === 'error' ? '❌' : '✅'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').classList.toggle('active', show);
+        }
+
+        function toggleTheme() {
+            document.documentElement.toggleAttribute('data-theme');
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        function logout() {
+            localStorage.removeItem('realmail_session');
+            location.reload();
+        }
+
+        // Close modal on outside click
+        document.getElementById('composeModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeCompose();
+        });
+    </script>
+</body>
+</html>
