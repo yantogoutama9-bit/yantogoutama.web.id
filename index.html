@@ -1,722 +1,613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MailHub - Email Client</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Master ERP (Offline)</title>
 
-        :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
-            --bg: #f3f4f6;
-            --surface: #ffffff;
-            --text: #111827;
-            --text-secondary: #6b7280;
-            --border: #e5e7eb;
-            --hover: #f9fafb;
-            --danger: #ef4444;
-            --success: #10b981;
-            --warning: #f59e0b;
-        }
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0bb56a" />
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Setup Screen */
-        .setup-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .setup-container {
-            width: 100%;
-            max-width: 500px;
-        }
-
-        .setup-box {
-            background: var(--surface);
-            padding: 32px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-        }
-
-        .setup-logo {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .setup-logo h1 {
-            font-size: 28px;
-            color: var(--primary);
-            margin-bottom: 8px;
-        }
-
-        .setup-logo p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        .info-box {
-            background: #dbeafe;
-            border: 1px solid #3b82f6;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #1e40af;
-        }
-
-        .info-box strong {
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text);
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-size: 14px;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        .email-preview {
-            background: var(--bg);
-            padding: 12px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 14px;
-            color: var(--primary);
-            margin-top: 8px;
-            word-break: break-all;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* Main App */
-        .app {
-            display: none;
-            height: 100vh;
-        }
-
-        .app.active {
-            display: flex;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-
-        .logo {
-            font-size: 22px;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 20px;
-        }
-
-        .my-email-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .my-email-label {
-            font-size: 11px;
-            opacity: 0.9;
-            margin-bottom: 4px;
-        }
-
-        .my-email-address {
-            font-size: 14px;
-            font-weight: 600;
-            word-break: break-all;
-        }
-
-        .copy-btn {
-            margin-top: 10px;
-            width: 100%;
-            padding: 8px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-
-        .compose-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 16px;
-        }
-
-        .nav-menu {
-            list-style: none;
-        }
-
-        .nav-item {
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            background: var(--hover);
-            color: var(--primary);
-        }
-
-        .nav-item .count {
-            margin-left: auto;
-            background: var(--primary);
-            color: white;
-            font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 10px;
-        }
-
-        /* Main Content */
-        .main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .header {
-            background: var(--surface);
-            border-bottom: 1px solid var(--border);
-            padding: 16px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .header h2 {
-            font-size: 20px;
-        }
-
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-        }
-
-        .email-list {
-            background: var(--surface);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .email-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .email-item:hover {
-            background: var(--hover);
-        }
-
-        .email-item.unread {
-            border-left: 3px solid var(--primary);
-        }
-
-        .email-sender {
-            font-weight: 600;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .email-item.unread .email-sender {
-            color: var(--primary);
-        }
-
-        .email-subject {
-            font-size: 14px;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .email-preview {
-            font-size: 13px;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* Compose Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .compose-modal {
-            background: var(--surface);
-            width: 100%;
-            max-width: 600px;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: var(--primary);
-            color: white;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-
-        .field {
-            margin-bottom: 16px;
-        }
-
-        .field label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .field input, .field textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .field textarea {
-            min-height: 200px;
-            resize: vertical;
-        }
-
-        .modal-footer {
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .send-btn {
-            padding: 12px 24px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--surface);
-            border-left: 4px solid var(--success);
-            padding: 16px 20px;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-            display: none;
-            z-index: 2000;
-        }
-
-        .toast.show {
-            display: block;
-        }
-    </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">ERP</div>
+      <div>
+        <div class="title">Master ERP</div>
+        <div class="subtitle">Offline + PWA • Purchasing • Inventory • Production • Sales • Finance</div>
+      </div>
+    </div>
 
-    <!-- SETUP SCREEN -->
-    <div class="setup-screen" id="setupScreen">
-        <div class="setup-container">
-            <div class="setup-box">
-                <div class="setup-logo">
-                    <h1>📧 MailHub</h1>
-                    <p>Email client sederhana</p>
-                </div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnBackupJson">Backup JSON</button>
+      <label class="btn ghost" for="fileImportJson" style="cursor:pointer;">Import JSON</label>
+      <input id="fileImportJson" type="file" accept="application/json" hidden />
+      <button class="btn" id="btnExportCsv">Export CSV</button>
+      <button class="btn danger" id="btnResetAll">Reset Data</button>
+    </div>
+  </header>
 
-                <div class="info-box">
-                    <strong>ℹ️ Informasi</strong>
-                    Masukkan username untuk membuat alamat email. Email akan tersimpan di browser Anda (local).
-                </div>
-
-                <div class="form-group">
-                    <label>Username Email</label>
-                    <input type="text" id="usernameInput" placeholder="yanto" value="yanto">
-                    <div class="email-preview" id="emailPreview">yanto@yantogoutama9-bit.github.io</div>
-                </div>
-
-                <div class="form-group">
-                    <label>Nama Lengkap</label>
-                    <input type="text" id="nameInput" placeholder="Yanto Goutama">
-                </div>
-
-                <button class="btn btn-primary" onclick="startApp()">
-                    Mulai Menggunakan
-                </button>
-            </div>
+  <main class="wrap">
+    <section class="grid">
+      <aside class="sidebar card">
+        <div class="tabs" id="tabs">
+          <button class="tab active" data-tab="dashboard">Dashboard</button>
+          <button class="tab" data-tab="master">Master Data</button>
+          <button class="tab" data-tab="purchasing">Purchasing</button>
+          <button class="tab" data-tab="inventory">Inventory</button>
+          <button class="tab" data-tab="production">Production</button>
+          <button class="tab" data-tab="sales">Sales</button>
+          <button class="tab" data-tab="shipping">Shipping</button>
+          <button class="tab" data-tab="returns">Returns</button>
+          <button class="tab" data-tab="finance">Finance</button>
+          <button class="tab" data-tab="reports">Reports</button>
         </div>
-    </div>
 
-    <!-- MAIN APP -->
-    <div class="app" id="mainApp">
-        
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">📧 MailHub</div>
-            
-            <div class="my-email-box">
-                <div class="my-email-label">Email Anda:</div>
-                <div class="my-email-address" id="displayEmail">-</div>
-                <button class="copy-btn" onclick="copyEmail()">📋 Salin</button>
-            </div>
-
-            <button class="compose-btn" onclick="openCompose()">
-                ✏️ Tulis Pesan
-            </button>
-
-            <ul class="nav-menu">
-                <li class="nav-item active" onclick="showFolder('inbox', this)">
-                    📥 Kotak Masuk
-                    <span class="count" id="inboxBadge">0</span>
-                </li>
-                <li class="nav-item" onclick="showFolder('sent', this)">
-                    📤 Terkirim
-                </li>
-            </ul>
-        </aside>
-
-        <!-- Main -->
-        <main class="main">
-            <div class="header">
-                <h2 id="folderTitle">Kotak Masuk</h2>
-                <button onclick="logout()" style="background: none; border: none; cursor: pointer; font-size: 20px;">🚪</button>
-            </div>
-
-            <div class="content">
-                <div class="email-list" id="emailList">
-                    <!-- Emails here -->
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- Compose Modal -->
-    <div class="modal-overlay" id="composeModal">
-        <div class="compose-modal">
-            <div class="modal-header">
-                <span>Tulis Pesan Baru</span>
-                <button onclick="closeCompose()" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="field">
-                    <label>Dari</label>
-                    <input type="text" id="fromInput" readonly>
-                </div>
-                <div class="field">
-                    <label>Kepada</label>
-                    <input type="email" id="toInput" placeholder="nama@email.com">
-                </div>
-                <div class="field">
-                    <label>Subjek</label>
-                    <input type="text" id="subjectInput" placeholder="Subjek pesan">
-                </div>
-                <div class="field">
-                    <label>Isi Pesan</label>
-                    <textarea id="bodyInput" placeholder="Tulis pesan Anda di sini..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="send-btn" onclick="sendEmail()">📤 Kirim Email</button>
-            </div>
+        <div class="hint">
+          <div class="hint-title">💡 Cara Cepat Mulai</div>
+          <ol>
+            <li>Masuk <b>Master Data</b> → buat <b>Vendor, Customer, Item</b></li>
+            <li><b>Purchasing</b> → buat PO → <b>Receive</b> (stok kain masuk)</li>
+            <li><b>Production</b> → buat WO (consume bahan → output baju)</li>
+            <li><b>Sales</b> → buat SO → <b>Shipping</b> kirim</li>
+            <li><b>Finance</b> otomatis ngikut transaksi + bisa input manual</li>
+          </ol>
         </div>
-    </div>
+      </aside>
 
-    <!-- Toast -->
-    <div class="toast" id="toast">Pesan</div>
+      <section class="content">
+        <!-- DASHBOARD -->
+        <div class="panel card active" data-panel="dashboard">
+          <div class="panel-head">
+            <h2>📊 Dashboard</h2>
+            <div class="muted">Ringkasan bisnis realtime (offline)</div>
+          </div>
 
-    <script>
-        // Data
-        let user = null;
-        let emails = [];
-        let currentFolder = 'inbox';
+          <div class="kpi-row">
+            <div class="kpi">
+              <div class="kpi-label">Stok Item</div>
+              <div class="kpi-value" id="kpiTotalItems">0</div>
+              <div class="kpi-note">Total SKU</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">Nilai Stok</div>
+              <div class="kpi-value" id="kpiStockValue">Rp 0</div>
+              <div class="kpi-note">Estimasi (avg cost)</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">Sales (Bulan Ini)</div>
+              <div class="kpi-value" id="kpiSalesMonth">Rp 0</div>
+              <div class="kpi-note">Total invoice</div>
+            </div>
+            <div class="kpi">
+              <div class="kpi-label">Profit (Bulan Ini)</div>
+              <div class="kpi-value" id="kpiProfitMonth">Rp 0</div>
+              <div class="kpi-note">Income - Expense</div>
+            </div>
+          </div>
 
-        // Init
-        document.getElementById('usernameInput').addEventListener('input', updatePreview);
-        
-        function updatePreview() {
-            const username = document.getElementById('usernameInput').value || 'username';
-            const domain = window.location.hostname;
-            document.getElementById('emailPreview').textContent = `${username}@${domain}`;
-        }
+          <div class="two-col">
+            <div class="card inner">
+              <h3>📈 Laba Rugi (Sederhana)</h3>
+              <div class="chart" id="chartPnL"></div>
+              <div class="small muted">Catatan: ini versi master template (bisa lo upgrade jadi akuntansi full).</div>
+            </div>
+            <div class="card inner">
+              <h3>🧾 Aktivitas Terakhir</h3>
+              <div class="list" id="recentActivity"></div>
+            </div>
+          </div>
+        </div>
 
-        function startApp() {
-            const username = document.getElementById('usernameInput').value.trim() || 'user';
-            const fullName = document.getElementById('nameInput').value.trim() || username;
-            const domain = window.location.hostname;
-            
-            // FIX: Pastikan tidak ada @gmail.com di domain
-            const cleanDomain = domain.replace(/^www\./, '').split(':')[0];
-            
-            user = {
-                username: username,
-                name: fullName,
-                email: `${username}@${cleanDomain}`,
-                domain: cleanDomain
-            };
-            
-            localStorage.setItem('mailhub_user', JSON.stringify(user));
-            showApp();
-        }
+        <!-- MASTER DATA -->
+        <div class="panel card" data-panel="master">
+          <div class="panel-head">
+            <h2>🧩 Master Data</h2>
+            <div class="muted">Vendor • Customer • Items</div>
+          </div>
 
-        function showApp() {
-            document.getElementById('setupScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.add('active');
-            document.getElementById('displayEmail').textContent = user.email;
-            document.getElementById('fromInput').value = user.email;
-            
-            loadEmails();
-        }
-
-        function loadEmails() {
-            const stored = localStorage.getItem(`emails_${user.email}`);
-            if (stored) {
-                emails = JSON.parse(stored);
-            } else {
-                // Email selamat datang
-                emails = [{
-                    id: Date.now(),
-                    from: 'system@mailhub.app',
-                    to: user.email,
-                    senderName: 'MailHub',
-                    subject: 'Selamat Datang! 👋',
-                    body: `Halo ${user.name},\n\nEmail Anda adalah:\n${user.email}\n\nIni adalah email client lokal yang menyimpan data di browser Anda.\n\nCara kerja:\n- Kirim email menggunakan tombol "Tulis Pesan"\n- Email akan dibuka di aplikasi email default Anda\n- Data tersimpan di browser ini\n\nSelamat menggunakan!`,
-                    date: new Date().toISOString(),
-                    read: false,
-                    folder: 'inbox'
-                }];
-                saveEmails();
-            }
-            renderEmails();
-        }
-
-        function saveEmails() {
-            localStorage.setItem(`emails_${user.email}`, JSON.stringify(emails));
-        }
-
-        function renderEmails() {
-            const list = document.getElementById('emailList');
-            const filtered = emails.filter(e => e.folder === currentFolder);
-            
-            if (filtered.length === 0) {
-                list.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-secondary);">Tidak ada email</div>';
-                return;
-            }
-            
-            list.innerHTML = filtered.map(e => `
-                <div class="email-item ${e.read ? '' : 'unread'}" onclick="viewEmail(${e.id})">
-                    <div class="email-sender">${e.senderName}</div>
-                    <div class="email-subject">${e.subject}</div>
-                    <div class="email-preview">${e.body.substring(0, 50)}...</div>
+          <div class="three-col">
+            <div class="card inner">
+              <h3>🏭 Vendor</h3>
+              <form id="formVendor" class="form">
+                <div class="row">
+                  <label>Nama Vendor</label>
+                  <input required name="name" placeholder="Contoh: Supplier Kain A" />
                 </div>
-            `).join('');
-            
-            // Update badge
-            const unread = emails.filter(e => e.folder === 'inbox' && !e.read).length;
-            document.getElementById('inboxBadge').textContent = unread;
-        }
+                <div class="row">
+                  <label>Telepon</label>
+                  <input name="phone" placeholder="08xxxx" />
+                </div>
+                <div class="row">
+                  <label>Email</label>
+                  <input name="email" placeholder="vendor@email.com" />
+                </div>
+                <button class="btn" type="submit">Tambah Vendor</button>
+              </form>
+              <div class="table-wrap">
+                <table class="table" id="tblVendors">
+                  <thead><tr><th>Nama</th><th>Kontak</th><th></th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
 
-        function viewEmail(id) {
-            const email = emails.find(e => e.id === id);
-            if (email) {
-                email.read = true;
-                saveEmails();
-                renderEmails();
-                alert(`Dari: ${email.senderName}\nSubjek: ${email.subject}\n\n${email.body}`);
-            }
-        }
+            <div class="card inner">
+              <h3>🧑‍💼 Customer</h3>
+              <form id="formCustomer" class="form">
+                <div class="row">
+                  <label>Nama Customer</label>
+                  <input required name="name" placeholder="Contoh: Toko Baju XYZ" />
+                </div>
+                <div class="row">
+                  <label>Telepon</label>
+                  <input name="phone" placeholder="08xxxx" />
+                </div>
+                <div class="row">
+                  <label>Email</label>
+                  <input name="email" placeholder="customer@email.com" />
+                </div>
+                <button class="btn" type="submit">Tambah Customer</button>
+              </form>
+              <div class="table-wrap">
+                <table class="table" id="tblCustomers">
+                  <thead><tr><th>Nama</th><th>Kontak</th><th></th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
 
-        function showFolder(folder, el) {
-            currentFolder = folder;
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('folderTitle').textContent = folder === 'inbox' ? 'Kotak Masuk' : 'Terkirim';
-            renderEmails();
-        }
+            <div class="card inner">
+              <h3>📦 Items</h3>
+              <form id="formItem" class="form">
+                <div class="row">
+                  <label>Nama Item</label>
+                  <input required name="name" placeholder="Contoh: Kain Katun 30s / Baju Jadi" />
+                </div>
+                <div class="row">
+                  <label>Tipe</label>
+                  <select name="type">
+                    <option value="raw">Raw Material (Bahan)</option>
+                    <option value="wip">WIP (Proses)</option>
+                    <option value="fg">Finished Goods (Produk Jadi)</option>
+                    <option value="service">Service</option>
+                  </select>
+                </div>
+                <div class="row">
+                  <label>Satuan</label>
+                  <input name="uom" placeholder="meter / pcs / roll" value="pcs" />
+                </div>
+                <div class="row">
+                  <label>Harga Jual Default</label>
+                  <input name="sellPrice" type="number" min="0" step="100" value="0" />
+                </div>
+                <button class="btn" type="submit">Tambah Item</button>
+              </form>
 
-        function openCompose() {
-            document.getElementById('composeModal').classList.add('active');
-        }
+              <div class="table-wrap">
+                <table class="table" id="tblItems">
+                  <thead><tr><th>Item</th><th>Tipe</th><th>Stok</th><th></th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        function closeCompose() {
-            document.getElementById('composeModal').classList.remove('active');
-            document.getElementById('toInput').value = '';
-            document.getElementById('subjectInput').value = '';
-            document.getElementById('bodyInput').value = '';
-        }
+        <!-- PURCHASING -->
+        <div class="panel card" data-panel="purchasing">
+          <div class="panel-head">
+            <h2>🛒 Purchasing</h2>
+            <div class="muted">Buat PO & terima barang (stok masuk)</div>
+          </div>
 
-        function sendEmail() {
-            const to = document.getElementById('toInput').value;
-            const subject = document.getElementById('subjectInput').value;
-            const body = document.getElementById('bodyInput').value;
-            
-            if (!to || !subject || !body) {
-                showToast('Lengkapi semua field!');
-                return;
-            }
-            
-            // Buka mailto
-            const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-            window.open(mailto, '_blank');
-            
-            // Simpan ke sent
-            emails.unshift({
-                id: Date.now(),
-                from: user.email,
-                to: to,
-                senderName: user.name,
-                subject: subject,
-                body: body,
-                date: new Date().toISOString(),
-                read: true,
-                folder: 'sent'
-            });
-            saveEmails();
-            
-            closeCompose();
-            showToast('Email dibuka di aplikasi mail Anda');
-            
-            if (currentFolder === 'sent') renderEmails();
-        }
+          <div class="two-col">
+            <div class="card inner">
+              <h3>🧾 Buat PO</h3>
+              <form id="formPO" class="form">
+                <div class="row">
+                  <label>Vendor</label>
+                  <select name="vendorId" id="poVendor" required></select>
+                </div>
+                <div class="row">
+                  <label>Tanggal PO</label>
+                  <input type="date" name="date" required />
+                </div>
 
-        function copyEmail() {
-            navigator.clipboard.writeText(user.email);
-            showToast('Email disalin!');
-        }
+                <div class="row">
+                  <label>Item</label>
+                  <select name="itemId" id="poItem" required></select>
+                </div>
+                <div class="row two">
+                  <div>
+                    <label>Qty</label>
+                    <input type="number" min="0" step="1" name="qty" required />
+                  </div>
+                  <div>
+                    <label>Harga Beli</label>
+                    <input type="number" min="0" step="100" name="price" required />
+                  </div>
+                </div>
 
-        function logout() {
-            localStorage.removeItem('mailhub_user');
-            location.reload();
-        }
+                <button class="btn" type="submit">Tambah PO</button>
+              </form>
+            </div>
 
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+            <div class="card inner">
+              <h3>📥 Daftar PO</h3>
+              <div class="table-wrap">
+                <table class="table" id="tblPO">
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th><th>Vendor</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="small muted">Klik <b>Receive</b> untuk menambah stok & mencatat expense.</div>
+            </div>
+          </div>
+        </div>
 
-        // Check existing session
-        const saved = localStorage.getItem('mailhub_user');
-        if (saved) {
-            user = JSON.parse(saved);
-            showApp();
-        }
-    </script>
+        <!-- INVENTORY -->
+        <div class="panel card" data-panel="inventory">
+          <div class="panel-head">
+            <h2>🏷️ Inventory</h2>
+            <div class="muted">Mutasi stok & penyesuaian</div>
+          </div>
 
+          <div class="two-col">
+            <div class="card inner">
+              <h3>➕ Stock Adjustment</h3>
+              <form id="formAdjust" class="form">
+                <div class="row">
+                  <label>Item</label>
+                  <select name="itemId" id="adjItem" required></select>
+                </div>
+                <div class="row two">
+                  <div>
+                    <label>Qty (+ / -)</label>
+                    <input type="number" name="qty" step="1" required />
+                  </div>
+                  <div>
+                    <label>Catatan</label>
+                    <input name="note" placeholder="Koreksi stok / rusak / opname" />
+                  </div>
+                </div>
+                <button class="btn" type="submit">Simpan Adjustment</button>
+              </form>
+            </div>
+
+            <div class="card inner">
+              <h3>📦 Stok Saat Ini</h3>
+              <div class="table-wrap">
+                <table class="table" id="tblStock">
+                  <thead><tr><th>Item</th><th>Tipe</th><th>Stok</th><th>Avg Cost</th></tr></thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="small muted">Avg cost dihitung dari pembelian PO (template sederhana).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PRODUCTION -->
+        <div class="panel card" data-panel="production">
+          <div class="panel-head">
+            <h2>🧵 Production</h2>
+            <div class="muted">Consume bahan → output produk jadi</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card inner">
+              <h3>🏭 Work Order</h3>
+              <form id="formWO" class="form">
+                <div class="row">
+                  <label>Tanggal</label>
+                  <input type="date" name="date" required />
+                </div>
+
+                <div class="row">
+                  <label>Bahan (Consume)</label>
+                  <select name="consumeItemId" id="woConsumeItem" required></select>
+                </div>
+                <div class="row">
+                  <label>Qty Consume</label>
+                  <input type="number" name="consumeQty" min="0" step="1" required />
+                </div>
+
+                <div class="row">
+                  <label>Produk Jadi (Output)</label>
+                  <select name="outputItemId" id="woOutputItem" required></select>
+                </div>
+                <div class="row">
+                  <label>Qty Output</label>
+                  <input type="number" name="outputQty" min="0" step="1" required />
+                </div>
+
+                <button class="btn" type="submit">Tambah WO</button>
+              </form>
+            </div>
+
+            <div class="card inner">
+              <h3>📋 Daftar WO</h3>
+              <div class="table-wrap">
+                <table class="table" id="tblWO">
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th><th>Consume</th><th>Qty</th><th>Output</th><th>Qty</th><th>Status</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="small muted">Klik <b>Complete</b> untuk mengurangi stok bahan & menambah stok produk jadi.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SALES -->
+        <div class="panel card" data-panel="sales">
+          <div class="panel-head">
+            <h2>💼 Sales</h2>
+            <div class="muted">Sales Order & invoice sederhana</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card inner">
+              <h3>🧾 Buat Sales Order</h3>
+              <form id="formSO" class="form">
+                <div class="row">
+                  <label>Customer</label>
+                  <select name="customerId" id="soCustomer" required></select>
+                </div>
+                <div class="row">
+                  <label>Tanggal</label>
+                  <input type="date" name="date" required />
+                </div>
+                <div class="row">
+                  <label>Item</label>
+                  <select name="itemId" id="soItem" required></select>
+                </div>
+                <div class="row two">
+                  <div>
+                    <label>Qty</label>
+                    <input type="number" min="0" step="1" name="qty" required />
+                  </div>
+                  <div>
+                    <label>Harga</label>
+                    <input type="number" min="0" step="100" name="price" required />
+                  </div>
+                </div>
+                <button class="btn" type="submit">Tambah SO</button>
+              </form>
+            </div>
+
+            <div class="card inner">
+              <h3>📦 Daftar SO</h3>
+              <div class="table-wrap">
+                <table class="table" id="tblSO">
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th><th>Customer</th><th>Item</th><th>Qty</th><th>Total</th><th>Status</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="small muted">Klik <b>Invoice</b> untuk mencatat income. Klik <b>Ship</b> untuk proses pengiriman.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SHIPPING -->
+        <div class="panel card" data-panel="shipping">
+          <div class="panel-head">
+            <h2>🚚 Shipping</h2>
+            <div class="muted">Pengiriman & stok keluar</div>
+          </div>
+
+          <div class="card inner">
+            <h3>📦 Daftar Pengiriman</h3>
+            <div class="table-wrap">
+              <table class="table" id="tblShip">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th><th>Customer</th><th>Item</th><th>Qty</th><th>Status</th><th></th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div class="small muted">Klik <b>Deliver</b> untuk mengurangi stok (keluar).</div>
+          </div>
+        </div>
+
+        <!-- RETURNS -->
+        <div class="panel card" data-panel="returns">
+          <div class="panel-head">
+            <h2>🔁 Returns</h2>
+            <div class="muted">Retur customer / retur ke vendor</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card inner">
+              <h3>↩️ Retur Customer (stok masuk)</h3>
+              <form id="formReturnCustomer" class="form">
+                <div class="row">
+                  <label>Customer</label>
+                  <select name="customerId" id="retCustCustomer" required></select>
+                </div>
+                <div class="row">
+                  <label>Item</label>
+                  <select name="itemId" id="retCustItem" required></select>
+                </div>
+                <div class="row two">
+                  <div>
+                    <label>Qty</label>
+                    <input type="number" min="0" step="1" name="qty" required />
+                  </div>
+                  <div>
+                    <label>Alasan</label>
+                    <input name="reason" placeholder="Size salah / cacat / dll" />
+                  </div>
+                </div>
+                <button class="btn" type="submit">Simpan Retur</button>
+              </form>
+            </div>
+
+            <div class="card inner">
+              <h3>↪️ Retur ke Vendor (stok keluar)</h3>
+              <form id="formReturnVendor" class="form">
+                <div class="row">
+                  <label>Vendor</label>
+                  <select name="vendorId" id="retVenVendor" required></select>
+                </div>
+                <div class="row">
+                  <label>Item</label>
+                  <select name="itemId" id="retVenItem" required></select>
+                </div>
+                <div class="row two">
+                  <div>
+                    <label>Qty</label>
+                    <input type="number" min="0" step="1" name="qty" required />
+                  </div>
+                  <div>
+                    <label>Alasan</label>
+                    <input name="reason" placeholder="Kain rusak / salah kirim / dll" />
+                  </div>
+                </div>
+                <button class="btn" type="submit">Simpan Retur</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="card inner">
+            <h3>📜 Riwayat Retur</h3>
+            <div class="table-wrap">
+              <table class="table" id="tblReturns">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th><th>Tipe</th><th>Partner</th><th>Item</th><th>Qty</th><th>Alasan</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINANCE -->
+        <div class="panel card" data-panel="finance">
+          <div class="panel-head">
+            <h2>💰 Finance</h2>
+            <div class="muted">Cashflow & input transaksi manual</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card inner">
+              <h3>➕ Input Manual</h3>
+              <form id="formFinance" class="form">
+                <div class="row">
+                  <label>Tanggal</label>
+                  <input type="date" name="date" required />
+                </div>
+                <div class="row">
+                  <label>Jenis</label>
+                  <select name="type">
+                    <option value="income">Income (Masuk)</option>
+                    <option value="expense">Expense (Keluar)</option>
+                  </select>
+                </div>
+                <div class="row">
+                  <label>Kategori</label>
+                  <input name="category" placeholder="Gaji / listrik / iklan / dll" required />
+                </div>
+                <div class="row">
+                  <label>Nominal</label>
+                  <input type="number" min="0" step="100" name="amount" required />
+                </div>
+                <div class="row">
+                  <label>Catatan</label>
+                  <input name="note" placeholder="optional" />
+                </div>
+                <button class="btn" type="submit">Simpan</button>
+              </form>
+            </div>
+
+            <div class="card inner">
+              <h3>📒 Cashflow</h3>
+              <div class="table-wrap">
+                <table class="table" id="tblFinance">
+                  <thead>
+                    <tr>
+                      <th>Tanggal</th><th>Type</th><th>Kategori</th><th>Nominal</th><th>Catatan</th><th></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="small muted">Transaksi dari PO (expense) & Invoice SO (income) akan masuk otomatis.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPORTS -->
+        <div class="panel card" data-panel="reports">
+          <div class="panel-head">
+            <h2>📑 Reports</h2>
+            <div class="muted">Laba Rugi sederhana + ringkasan</div>
+          </div>
+
+          <div class="two-col">
+            <div class="card inner">
+              <h3>🧾 Laba Rugi</h3>
+              <div class="filters">
+                <div>
+                  <label>Dari</label>
+                  <input type="date" id="repFrom">
+                </div>
+                <div>
+                  <label>Sampai</label>
+                  <input type="date" id="repTo">
+                </div>
+                <button class="btn" id="btnRunReport">Generate</button>
+              </div>
+
+              <div class="pnl-box" id="pnlBox">
+                <div class="pnl-row">
+                  <div>Income</div><div id="repIncome">Rp 0</div>
+                </div>
+                <div class="pnl-row">
+                  <div>Expense</div><div id="repExpense">Rp 0</div>
+                </div>
+                <div class="pnl-row total">
+                  <div>Profit</div><div id="repProfit">Rp 0</div>
+                </div>
+              </div>
+              <div class="small muted">Ini versi master (cash basis). Kalau mau accrual + COGS detail, gue upgrade.</div>
+            </div>
+
+            <div class="card inner">
+              <h3>📌 Summary</h3>
+              <div class="list" id="summaryBox"></div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div>⚡ Master ERP Template • Offline First • PWA Ready</div>
+    <div class="muted">Data tersimpan di browser (LocalStorage). Backup JSON biar aman.</div>
+  </footer>
+
+  <script src="app.js"></script>
 </body>
 </html>
